@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cálculo de Batente de Concreto</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #2a2a2a;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #333;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #4caf50;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 1rem;
+            display: block;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background-color: #444;
+            color: #fff;
+        }
+        button {
+            margin-top: 1.5rem;
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            background-color: #4caf50;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #388e3c;
+        }
+        .result {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #555;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Batente de Concreto</h1>
+        <div class="dashboard">
+            <label for="comprimento">Comprimento (m):</label>
+            <input type="number" id="comprimento" placeholder="Digite o comprimento">
+
+            <label for="largura">Largura (m):</label>
+            <input type="number" id="largura" placeholder="Digite a largura">
+
+            <label for="altura">Altura (m):</label>
+            <input type="number" id="altura" placeholder="Digite a altura">
+
+            <label for="peso_especifico">Peso Específico do Concreto (kg/m³):</label>
+            <input type="number" id="peso_especifico" placeholder="Digite o peso específico do concreto">
+
+            <button onclick="calcularBatente()">Calcular Volume e Peso</button>
+        </div>
+
+        <div id="resultado" class="result" style="display: none;"></div>
+    </div>
+    <script>
+        function calcularBatente() {
+            const comprimento = parseFloat(document.getElementById('comprimento').value);
+            const largura = parseFloat(document.getElementById('largura').value);
+            const altura = parseFloat(document.getElementById('altura').value);
+            const pesoEspecifico = parseFloat(document.getElementById('peso_especifico').value);
+
+            if (isNaN(comprimento) || isNaN(largura) || isNaN(altura) || isNaN(pesoEspecifico) || comprimento <= 0 || largura <= 0 || altura <= 0 || pesoEspecifico <= 0) {
+                alert('Por favor, insira valores válidos para todas as dimensões e peso específico.');
+                return;
+            }
+
+            const volume = comprimento * largura * altura;
+            const peso = volume * pesoEspecifico;
+
+            document.getElementById('resultado').innerText = `Volume do Batente: ${volume.toFixed(2)} m³\nPeso do Batente: ${peso.toFixed(2)} kg`;
+            document.getElementById('resultado').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
