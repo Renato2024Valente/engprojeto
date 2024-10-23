@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicadores Service Desk</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1600px;
+        }
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+        .navbar {
+            background-color: #004085;
+        }
+        .navbar-brand, .navbar-nav .nav-item .nav-link {
+            color: #ffffff !important;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <a class="navbar-brand" href="#">Indicadores Service Desk</a>
+    </nav>
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="stat-value" id="atendimentos">32</div>
+                    <div class="stat-label">Atendimentos em Andamento</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="stat-value" id="pendencias">23</div>
+                    <div class="stat-label">Pendências Hoje</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Atendimentos por Status</h5>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Pendências por Prioridade</h5>
+                        <div class="chart-container">
+                            <canvas id="priorityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Tempo Médio de Resolução por Setor</h5>
+                        <div class="chart-container">
+                            <canvas id="resolutionTimeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Satisfação do Cliente</h5>
+                        <div class="chart-container">
+                            <canvas id="customerSatisfactionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Atendimentos por Status
+            new Chart(document.getElementById('statusChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Em Andamento', 'Concluído', 'Pendente', 'Cancelado'],
+                    datasets: [{
+                        label: 'Quantidade',
+                        data: [10, 15, 5, 2],
+                        backgroundColor: ['#4caf50', '#2196f3', '#ff9800', '#f44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Pendências por Prioridade
+            new Chart(document.getElementById('priorityChart').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Alta', 'Média', 'Baixa'],
+                    datasets: [{
+                        data: [8, 10, 5],
+                        backgroundColor: ['#f44336', '#ff9800', '#4caf50']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+
+            // Tempo Médio de Resolução por Setor
+            new Chart(document.getElementById('resolutionTimeChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Setor A', 'Setor B', 'Setor C', 'Setor D'],
+                    datasets: [{
+                        label: 'Tempo Médio (horas)',
+                        data: [4, 3, 5, 2],
+                        backgroundColor: '#2196f3'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Satisfação do Cliente
+            new Chart(document.getElementById('customerSatisfactionChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Satisfeito', 'Neutro', 'Insatisfeito'],
+                    datasets: [{
+                        data: [86.7, 10, 3.3],
+                        backgroundColor: ['#4caf50', '#ff9800', '#f44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Produção</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1600px;
+        }
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .navbar {
+            background-color: #004085;
+        }
+        .navbar-brand, .navbar-nav .nav-item .nav-link, #downloadPdf {
+            color: #ffffff !important;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <a class="navbar-brand" href="#">Dashboard de Produção</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <button class="btn btn-outline-light mr-2" id="downloadCsv">Baixar CSV</button>
+                    <button class="btn btn-outline-light mr-2" id="downloadExcel">Baixar Excel</button>
+                    <button class="btn btn-primary" id="downloadPdf">Baixar PDF</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-2">
+                <div class="stat-card">
+                    <div class="stat-value" id="production">460,734</div>
+                    <div class="stat-label">Produção (unidades)</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-card">
+                    <div class="stat-value" id="active-hours">7,967</div>
+                    <div class="stat-label">Horas Ativas</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-card">
+                    <div class="stat-value" id="hours-lost">1,149</div>
+                    <div class="stat-label">Horas Perdidas</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-card">
+                    <div class="stat-value" id="defects">1,483</div>
+                    <div class="stat-label">Refugo</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-card">
+                    <div class="stat-value" id="oee">68.35%</div>
+                    <div class="stat-label">OEE (Eficiência Global)</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Produtividade</h5>
+                        <div class="chart-container">
+                            <canvas id="productivityGauge"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Eficiência</h5>
+                        <div class="chart-container">
+                            <canvas id="efficiencyGauge"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Qualidade</h5>
+                        <div class="chart-container">
+                            <canvas id="qualityGauge"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Refugo</h5>
+                        <div class="chart-container">
+                            <canvas id="defectGauge"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Análise de Produção - Evolução</h5>
+                        <div class="chart-container">
+                            <canvas id="productionAnalysisChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Refugo Mensal por Setor</h5>
+                        <div class="chart-container">
+                            <canvas id="monthlyDefectsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Ranking Mensal por Setor</h5>
+                        <div class="chart-container">
+                            <canvas id="monthlyRankingChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Gráficos de Gauge para KPIs
+            function createGauge(ctx, value, label, color) {
+                return new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [label, ''],
+                        datasets: [{
+                            data: [value, 100 - value],
+                            backgroundColor: [color, '#e0e0e0'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '80%',
+                        plugins: {
+                            tooltip: { enabled: false },
+                            datalabels: {
+                                display: true,
+                                color: '#333',
+                                font: {
+                                    weight: 'bold',
+                                    size: 16
+                                },
+                                formatter: (value, context) => {
+                                    if (context.dataIndex === 0) {
+                                        return value + '%';
+                                    } else {
+                                        return '';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            createGauge(document.getElementById('productivityGauge').getContext('2d'), 75, 'Produtividade', '#4caf50');
+            createGauge(document.getElementById('efficiencyGauge').getContext('2d'), 85, 'Eficiência', '#ff9800');
+            createGauge(document.getElementById('qualityGauge').getContext('2d'), 90, 'Qualidade', '#2196f3');
+            createGauge(document.getElementById('defectGauge').getContext('2d'), 5, 'Refugo', '#f44336');
+
+            // Análise de Produção - Evolução
+            new Chart(document.getElementById('productionAnalysisChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Produção Real',
+                        data: [460, 480, 500, 470, 490, 510, 530, 520, 540, 560, 550, 570],
+                        borderColor: '#004085',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Refugo Mensal por Setor
+            new Chart(document.getElementById('monthlyDefectsChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Setor A', 'Setor B', 'Setor C', 'Setor D'],
+                    datasets: [{
+                        label: 'Refugo Mensal',
+                        data: [10, 15, 8, 12],
+                        backgroundColor: '#f44336'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Ranking Mensal por Setor
+            new Chart(document.getElementById('monthlyRankingChart').getContext('2d'), {
+                type: 'horizontalBar',
+                data: {
+                    labels: ['Setor A', 'Setor B', 'Setor C'],
+                    datasets: [{
+                        label: 'Ranking de Produção',
+                        data: [80, 70, 60],
+                        backgroundColor: ['#4caf50', '#ff9800', '#2196f3']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
