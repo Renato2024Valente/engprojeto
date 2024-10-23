@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Manutenção</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .container-fluid {
+            padding: 20px;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: #0078d4;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #005a9e;
+        }
+        #chartContainer {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title"><i class="fas fa-tools"></i> Menu de Manutenção</h4>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-home"></i> Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-calendar-check"></i> Manutenção Preventiva</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-tools"></i> Manutenção Corretiva</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-chart-line"></i> Relatórios de Manutenção</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-info-circle"></i> Sobre</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="text-center">Gestão de Manutenção Industrial</h1>
+                        <p class="text-center">Gerencie eficientemente as manutenções preventivas e corretivas dos seus equipamentos industriais.</p>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Cadastrar Manutenção</h5>
+                                        <form id="maintenanceForm">
+                                            <div class="form-group">
+                                                <label for="equipmentName">Nome do Equipamento</label>
+                                                <input type="text" class="form-control" id="equipmentName" placeholder="Digite o nome do equipamento" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="maintenanceType">Tipo de Manutenção</label>
+                                                <select class="form-control" id="maintenanceType" required>
+                                                    <option value="">Selecione...</option>
+                                                    <option value="preventiva">Preventiva</option>
+                                                    <option value="corretiva">Corretiva</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="maintenanceDate">Data da Manutenção</label>
+                                                <input type="date" class="form-control" id="maintenanceDate" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="description">Descrição</label>
+                                                <textarea class="form-control" id="description" rows="3" placeholder="Descreva a manutenção realizada"></textarea>
+                                            </div>
+                                            <button type="button" class="btn btn-primary" onclick="addMaintenance()">Cadastrar</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Próximas Manutenções</h5>
+                                        <ul id="maintenanceList" class="list-group">
+                                            <!-- Lista de manutenções cadastradas aparecerá aqui -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="chartContainer" class="text-center">
+                            <canvas id="maintenanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const maintenanceData = {
+            preventiva: 0,
+            corretiva: 0
+        };
+
+        function addMaintenance() {
+            const equipmentName = document.getElementById('equipmentName').value;
+            const maintenanceType = document.getElementById('maintenanceType').value;
+            const maintenanceDate = document.getElementById('maintenanceDate').value;
+            const description = document.getElementById('description').value;
+
+            if (!equipmentName || !maintenanceType || !maintenanceDate) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+
+            // Adiciona manutenção à lista
+            const maintenanceList = document.getElementById('maintenanceList');
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item';
+            listItem.innerHTML = `<strong>Equipamento:</strong> ${equipmentName} - <strong>Tipo:</strong> ${maintenanceType} - <strong>Data:</strong> ${maintenanceDate}<br><strong>Descrição:</strong> ${description}`;
+            maintenanceList.appendChild(listItem);
+
+            // Atualiza dados de manutenção
+            maintenanceData[maintenanceType]++;
+            updateChart();
+
+            // Limpa o formulário
+            document.getElementById('maintenanceForm').reset();
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('maintenanceChart').getContext('2d');
+            if (window.maintenanceChart) {
+                window.maintenanceChart.destroy();
+            }
+            window.maintenanceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Preventiva', 'Corretiva'],
+                    datasets: [{
+                        data: [maintenanceData.preventiva, maintenanceData.corretiva],
+                        backgroundColor: ['#28a745', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Análise de Varejo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2a2a2a;
+            color: #ffffff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+        }
+        .card {
+            margin-bottom: 20px;
+            background-color: #3a3a3a;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+        .navbar {
+            background-color: #444;
+        }
+        .navbar-brand, .navbar-nav .nav-item .nav-link, #downloadPdf {
+            color: #ffffff !important;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background-color: #3a3a3a;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            color: #bbbbbb;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <a class="navbar-brand" href="#">Dashboard de Análise de Varejo</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <button class="btn btn-outline-light mr-2" id="downloadCsv">Baixar CSV</button>
+                    <button class="btn btn-outline-light mr-2" id="downloadExcel">Baixar Excel</button>
+                    <button class="btn btn-primary" id="downloadPdf">Baixar PDF</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-revenue">$1,061M</div>
+                    <div class="stat-label">Receita Total</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="stat-value" id="units-sold">192,013</div>
+                    <div class="stat-label">Unidades Vendidas</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Receita vs Unidades Vendidas</h5>
+                        <div class="chart-container">
+                            <canvas id="revenueVsUnitsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Unidades Vendidas por Faixa Etária</h5>
+                        <div class="chart-container">
+                            <canvas id="unitsByAgeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Top 3 Categorias de Produto por Receita e Faixa Etária</h5>
+                        <div class="chart-container">
+                            <canvas id="topCategoriesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Receita por Categoria de Produto</h5>
+                        <div class="chart-container">
+                            <canvas id="revenueByCategoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicialização dos gráficos usando Chart.js
+            const revenueVsUnitsCtx = document.getElementById('revenueVsUnitsChart').getContext('2d');
+            const unitsByAgeCtx = document.getElementById('unitsByAgeChart').getContext('2d');
+            const topCategoriesCtx = document.getElementById('topCategoriesChart').getContext('2d');
+            const revenueByCategoryCtx = document.getElementById('revenueByCategoryChart').getContext('2d');
+
+            const revenueVsUnitsChart = new Chart(revenueVsUnitsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        label: 'Receita ($M)',
+                        data: [300, 400, 350, 450],
+                        backgroundColor: '#4caf50'
+                    }, {
+                        label: 'Unidades Vendidas (milhares)',
+                        data: [150, 200, 170, 220],
+                        backgroundColor: '#2196f3'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            const unitsByAgeChart = new Chart(unitsByAgeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['18-24', '25-34', '35-44', '45-54', '55+'],
+                    datasets: [{
+                        label: 'Unidades Vendidas',
+                        data: [50, 70, 60, 40, 30],
+                        backgroundColor: '#ff9800'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            const topCategoriesChart = new Chart(topCategoriesCtx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: ['18-24', '25-34', '35-44'],
+                    datasets: [{
+                        label: 'Laptops',
+                        data: [30, 40, 35],
+                        backgroundColor: '#4caf50'
+                    }, {
+                        label: 'Tablets',
+                        data: [20, 25, 30],
+                        backgroundColor: '#2196f3'
+                    }, {
+                        label: 'Celulares',
+                        data: [25, 30, 25],
+                        backgroundColor: '#ff9800'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            const revenueByCategoryChart = new Chart(revenueByCategoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Laptops', 'Tablets', 'Celulares'],
+                    datasets: [{
+                        data: [40, 35, 25],
+                        backgroundColor: ['#4caf50', '#2196f3', '#ff9800']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
+</body>
+</html>
